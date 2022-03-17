@@ -21,16 +21,24 @@ class _MyEventsState extends State<MyEvents>
   final userdata = GetStorage();
   var _selectedIndexConfirmed;
   var _selectedIndexPending;
+  var _selectedIndexAwaiting;
   var selectedEventJson;
   int? selectedShowId;
 
   var userId;
   var userName;
   var userEventsResponseBody;
+  var userPendingEventsResponseBody;
+  var userConfirmedEventsResponseBody;
+  var userAwaitingEventsResponseBody;
   var userEventsCount;
+  var userConfirmedEventsCount;
+  var userAwaitingEventsCount;
+  var userPendingEventsCount;
   var userEvents;
   var userConfirmedEvents;
   var userPendingEvents;
+  var userAwaitingEvents;
 
   @override
   void initState() {
@@ -81,22 +89,48 @@ class _MyEventsState extends State<MyEvents>
     setState(() {
       WidgetsBinding.instance!.addPostFrameCallback((_) {
         Provider.of<ApiData>(context, listen: false).apiGetUserEvents(userId);
+        Provider.of<ApiData>(context, listen: false).apiGetUserPendingEvents(userId);
+        Provider.of<ApiData>(context, listen: false).apiGetUserAwaitingEvents(userId);
+        Provider.of<ApiData>(context, listen: false).apiGetUserConfirmedEvents(userId);
       });
       userEventsResponseBody = userdata.read('userEventsResponseBody');
+
       userEventsCount = userdata.read('userEventsCount');
-      print('MyEvents userEventsCount: $userEventsCount');
 
       userEvents = userEventsCount == 0
           ? null
           : eventFromJson(userEventsResponseBody); // List<Event>
 
-      userConfirmedEvents = userEventsCount == 0
-          ? null
-          : userEvents.where((i) => i.confirmed == true).toList();
+      // userConfirmedEvents = userEventsCount == 0
+      //     ? null
+      //     : userEvents.where((i) => i.confirmed == true).toList();
 
-      userPendingEvents = userEventsCount == 0
+      // PENDING
+      userPendingEventsResponseBody = userdata.read('userPendingEventsResponseBody');
+
+      userPendingEventsCount = userdata.read('userPendingEventsCount');
+
+      userPendingEvents = userPendingEventsCount == 0
           ? null
-          : userEvents.where((i) => i.confirmed == false).toList();
+          : eventFromJson(userPendingEventsResponseBody).toList(); // List<Event>
+
+      // Awaiting
+      userAwaitingEventsResponseBody = userdata.read('userAwaitingEventsResponseBody');
+
+      userAwaitingEventsCount = userdata.read('userAwaitingEventsCount');
+
+      userAwaitingEvents = userAwaitingEventsCount == 0
+          ? null
+          : eventFromJson(userAwaitingEventsResponseBody).toList(); // List<Event>
+
+      // Confirmed
+      userConfirmedEventsResponseBody = userdata.read('userConfirmedEventsResponseBody');
+
+      userConfirmedEventsCount = userdata.read('userConfirmedEventsCount');
+
+      userConfirmedEvents = userConfirmedEventsCount == 0
+          ? null
+          : eventFromJson(userConfirmedEventsResponseBody).toList(); // List<Event>
     });
   }
 
@@ -157,160 +191,258 @@ class _MyEventsState extends State<MyEvents>
                           ),
                         ),
                       )
-                    : Column(
-                        children: [
-                          Text("Confirmados"),
-                          SizedBox(
-                            height: screenHeight * 0.01,
-                          ),
-                          userConfirmedEvents.length == 0
-                              ? Center(
-                                  child: Text(
-                                    '\n',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  scrollDirection: Axis.vertical,
-                                  shrinkWrap: true,
-                                  itemCount: userConfirmedEvents.length,
-                                  itemBuilder: (context, index) {
-                                    return Card(
-                                      child: ListTile(
-                                        selected:
-                                            index == _selectedIndexConfirmed,
-                                        selectedTileColor: Colors.lightBlue[50],
-                                        isThreeLine: true,
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedIndexPending = null;
-                                            _selectedIndexConfirmed = index;
-                                            selectedShowId =
-                                                userConfirmedEvents[index].id;
-                                          });
-
-                                          selectedEventJson =
-                                              userConfirmedEvents[index]
-                                                  .toJson();
-                                          userdata.remove('selectedEventJson');
-                                          userdata.write('selectedEventJson',
-                                              selectedEventJson);
-
-                                          // var selectedEventName = userEvents[index].name;
-                                          // userdata.write(
-                                          //     'selectedBandName', selectedBandName);
-
-                                          // ScaffoldMessenger.of(context).showSnackBar(
-                                          //   SnackBar(
-                                          //     behavior: SnackBarBehavior.floating,
-                                          //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
-                                          //     content: Text(
-                                          //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
-                                          //         textAlign: TextAlign.center),
-                                          //     duration: Duration(seconds: 1),
-                                          //   ),
-                                          // );
-                                        },
-                                        title: Text(userConfirmedEvents[index]
-                                            .showDatetime
-                                            .toString()
-                                            .substring(0, 16)),
-                                        subtitle: Text(
-                                          '$guitarEmoji ${userConfirmedEvents[index].band.name}\n$addressEmoji ${userConfirmedEvents[index].pub.name}',
-                                          style: TextStyle(
-                                            height: 1.25,
-                                            wordSpacing: 1.0,
-                                            letterSpacing: 1.0,
-                                          ),
-                                        ),
-                                        leading: CircleAvatar(
-                                          backgroundColor: Colors.green,
-                                          child: Icon(Icons.event,
-                                              color: Colors.white),
-                                        ),
-                                        trailing: Icon(Icons
-                                            .nightlife), // * em EVENT usar = Icons.nightlife
+                    : SingleChildScrollView(
+                      child: Column(
+                          children: [
+                            Text("Confirmados"),
+                            SizedBox(
+                              height: screenHeight * 0.01,
+                            ),
+                            userConfirmedEventsCount == 0
+                                ? Center(
+                                    child: Text(
+                                      '\n',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 12.0,
                                       ),
-                                    );
-                                  },
-                                ),
-                          Text("Pendentes"),
-                          ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            shrinkWrap: true,
-                            itemCount: userPendingEvents.length,
-                            itemBuilder: (context, index) {
-                              return Card(
-                                child: ListTile(
-                                  selected: index == _selectedIndexPending,
-                                  selectedTileColor: Colors.lightBlue[50],
-                                  isThreeLine: true,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedIndexConfirmed = null;
-                                      _selectedIndexPending = index;
-                                      selectedShowId =
-                                          userPendingEvents[index].id;
-                                    });
-
-                                    selectedEventJson =
-                                        userPendingEvents[index].toJson();
-                                    userdata.remove('selectedEventJson');
-                                    userdata.write(
-                                        'selectedEventJson', selectedEventJson);
-
-                                    // var selectedEventName = userEvents[index].name;
-                                    // userdata.write(
-                                    //     'selectedBandName', selectedBandName);
-
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //   SnackBar(
-                                    //     behavior: SnackBarBehavior.floating,
-                                    //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
-                                    //     content: Text(
-                                    //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
-                                    //         textAlign: TextAlign.center),
-                                    //     duration: Duration(seconds: 1),
-                                    //   ),
-                                    // );
-                                  },
-                                  title: Text(userPendingEvents[index]
-                                      .showDatetime
-                                      .toString()
-                                      .substring(0, 16)),
-                                  subtitle: Text(
-                                    '$guitarEmoji ${userPendingEvents[index].band.name}\n$addressEmoji ${userPendingEvents[index].pub.name}',
-                                    style: TextStyle(
-                                      height: 1.25,
-                                      wordSpacing: 1.0,
-                                      letterSpacing: 1.0,
                                     ),
+                                  )
+                                : ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemCount: userConfirmedEventsCount,
+                                    itemBuilder: (context, index) {
+                                      return Card(
+                                        child: ListTile(
+                                          selected:
+                                              index == _selectedIndexConfirmed,
+                                          selectedTileColor: Colors.lightBlue[50],
+                                          isThreeLine: true,
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedIndexAwaiting = null;
+                                              _selectedIndexPending = null;
+                                              _selectedIndexConfirmed = index;
+                                              selectedShowId = userConfirmedEvents[index].id;
+                                            });
+
+                                            selectedEventJson =
+                                                userConfirmedEvents[index]
+                                                    .toJson();
+                                            userdata.remove('selectedEventJson');
+                                            userdata.write('selectedEventJson',
+                                                selectedEventJson);
+
+                                            // var selectedEventName = userEvents[index].name;
+                                            // userdata.write(
+                                            //     'selectedBandName', selectedBandName);
+
+                                            // ScaffoldMessenger.of(context).showSnackBar(
+                                            //   SnackBar(
+                                            //     behavior: SnackBarBehavior.floating,
+                                            //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
+                                            //     content: Text(
+                                            //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
+                                            //         textAlign: TextAlign.center),
+                                            //     duration: Duration(seconds: 1),
+                                            //   ),
+                                            // );
+                                          },
+                                          title: Text(userConfirmedEvents[index]
+                                              .showDatetime
+                                              .toString()
+                                              .substring(0, 16)),
+                                          subtitle: Text(
+                                            '$guitarEmoji ${userConfirmedEvents[index].band.name}\n$addressEmoji ${userConfirmedEvents[index].pub.name}',
+                                            style: TextStyle(
+                                              height: 1.25,
+                                              wordSpacing: 1.0,
+                                              letterSpacing: 1.0,
+                                            ),
+                                          ),
+                                          leading: CircleAvatar(
+                                            backgroundColor: Colors.green,
+                                            child: Icon(Icons.event,
+                                                color: Colors.white),
+                                          ),
+                                          trailing: Icon(Icons
+                                              .nightlife), // * em EVENT usar = Icons.nightlife
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  leading: CircleAvatar(
-                                    // backgroundColor: Colors.blue,
-                                    child: Icon(Icons.event),
-                                  ),
-                                  trailing: Icon(Icons
-                                      .nightlife), // * em EVENT usar = Icons.nightlife
+                            Text("Pendentes"),
+                            userPendingEventsCount == 0
+                                ? Center(
+                              child: Text(
+                                '\n',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12.0,
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                              ),
+                            )
+                            :
+                            ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              itemCount: userPendingEventsCount,
+                              itemBuilder: (context, index) {
+                                return Card(
+                                  child: ListTile(
+                                    selected: index == _selectedIndexPending,
+                                    selectedTileColor: Colors.lightBlue[50],
+                                    isThreeLine: true,
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedIndexAwaiting = null;
+                                        _selectedIndexConfirmed = null;
+                                        _selectedIndexPending = index;
+                                        selectedShowId = userPendingEvents[index].id;
+                                      });
+
+                                      selectedEventJson =
+                                          userPendingEvents[index].toJson();
+                                      userdata.remove('selectedEventJson');
+                                      userdata.write(
+                                          'selectedEventJson', selectedEventJson);
+
+                                      // var selectedEventName = userEvents[index].name;
+                                      // userdata.write(
+                                      //     'selectedBandName', selectedBandName);
+
+                                      // ScaffoldMessenger.of(context).showSnackBar(
+                                      //   SnackBar(
+                                      //     behavior: SnackBarBehavior.floating,
+                                      //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
+                                      //     content: Text(
+                                      //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
+                                      //         textAlign: TextAlign.center),
+                                      //     duration: Duration(seconds: 1),
+                                      //   ),
+                                      // );
+                                    },
+                                    title: Text(userPendingEvents[index]
+                                        .showDatetime
+                                        .toString()
+                                        .substring(0, 16)),
+                                    subtitle: Text(
+                                      '$guitarEmoji ${userPendingEvents[index].band.name}\n$addressEmoji ${userPendingEvents[index].pub.name}',
+                                      style: TextStyle(
+                                        height: 1.25,
+                                        wordSpacing: 1.0,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                    leading: CircleAvatar(
+                                      // backgroundColor: Colors.blue,
+                                      child: Icon(Icons.event),
+                                    ),
+                                    trailing: Icon(Icons
+                                        .nightlife), // * em EVENT usar = Icons.nightlife
+                                  ),
+                                );
+                              },
+                            ),
+                            Text("Aguardando"),
+                            userAwaitingEventsCount == 0
+                                ? Center(
+                              child: Text(
+                                '\n',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                ),
+                              ),
+                            )
+                           :
+                            ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              shrinkWrap: true,
+                              itemCount: userAwaitingEventsCount,
+                              itemBuilder: (context, index) {
+                                return Card(
+                                  child: ListTile(
+                                    selected: index == _selectedIndexAwaiting,
+                                    selectedTileColor: Colors.lightBlue[50],
+                                    isThreeLine: true,
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedIndexPending = null;
+                                        _selectedIndexConfirmed = null;
+                                        _selectedIndexAwaiting = index;
+                                        selectedShowId = userAwaitingEvents[index].id;
+                                      });
+
+                                      selectedEventJson = userAwaitingEvents[index].toJson();
+                                      userdata.remove('selectedEventJson');
+                                      userdata.write('selectedEventJson', selectedEventJson);
+
+                                      // var selectedEventName = userEvents[index].name;
+                                      // userdata.write(
+                                      //     'selectedBandName', selectedBandName);
+
+                                      // ScaffoldMessenger.of(context).showSnackBar(
+                                      //   SnackBar(
+                                      //     behavior: SnackBarBehavior.floating,
+                                      //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
+                                      //     content: Text(
+                                      //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
+                                      //         textAlign: TextAlign.center),
+                                      //     duration: Duration(seconds: 1),
+                                      //   ),
+                                      // );
+                                    },
+                                    title: Text(userAwaitingEvents[index]
+                                        .showDatetime
+                                        .toString()
+                                        .substring(0, 16)),
+                                    subtitle: Text(
+                                      '$guitarEmoji ${userAwaitingEvents[index].band.name}\n$addressEmoji ${userAwaitingEvents[index].pub.name}',
+                                      style: TextStyle(
+                                        height: 1.25,
+                                        wordSpacing: 1.0,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                    leading: CircleAvatar(
+                                      // backgroundColor: Colors.blue,
+                                      child: Icon(Icons.event),
+                                    ),
+                                    trailing: Icon(Icons
+                                        .nightlife), // * em EVENT usar = Icons.nightlife
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                    ),
               ),
             ),
-            // RoundedButton(
-            //   color: Colors.blueAccent,
-            //   text: 'Alterar Evento',
-            //   onPressed: () {
-            //     // TODO: ir para uma tela de ALTERAR o EVENTO (pode ser uma sobreposição de tela)
-            //     // Navigator.pushNamed(context, null);
-            //   },
-            // ),
+            RoundedButton(
+              color: Colors.green,
+              text: 'Confirmar',
+              onPressed: () {
+                WidgetsBinding.instance!.addPostFrameCallback((_) {
+                  Provider.of<ApiData>(context, listen: false)
+                      .apiConfirmEvent(selectedShowId);
+                  // refreshVariables();
+                  // _getData();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text("Evento CONFIRMADO com sucesso"),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+
+                  Navigator.pushNamed(context, MyEvents.id);
+                });
+              },
+            ),
             RoundedButton(
               color: Colors.redAccent,
               text: 'Deletar',
@@ -324,7 +456,7 @@ class _MyEventsState extends State<MyEvents>
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
-                      content: Text("Evento deletado com sucesso"),
+                      content: Text("Evento DELETADO com sucesso"),
                       duration: Duration(seconds: 2),
                     ),
                   );

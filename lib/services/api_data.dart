@@ -69,20 +69,84 @@ class ApiData extends ChangeNotifier {
     var response = await Backend.getEventsByUser(userId);
 
     String userEventsResponseBody = response.body;
-    // print('apiGetEventsByUser responseBody: $userEventsResponseBody');
 
     if (response.statusCode == 200 && userEventsResponseBody != '[]') {
       _userdata.write('userEventsResponseBody', userEventsResponseBody);
 
       var userEvents = eventFromJson(userEventsResponseBody);
       var userEventsCount = userEvents.length;
-      // print('apiGetEventsByUser userEventsCount: $userEventsCount');
 
       _userdata.write('userEventsCount', userEventsCount);
 
       notifyListeners();
     } else {
       _userdata.write('userEventsCount', 0);
+    }
+
+    notifyListeners();
+  }
+
+  void apiGetUserPendingEvents(int? userId) async {
+    print("userId: $userId");
+    var response = await Backend.getPendingEventsByUser(userId);
+
+    String userPendingEventsResponseBody = response.body;
+
+    if (response.statusCode == 200 && userPendingEventsResponseBody != '[]') {
+      _userdata.write('userPendingEventsResponseBody', userPendingEventsResponseBody);
+
+      var userPendingEvents = eventFromJson(userPendingEventsResponseBody);
+      var userPendingEventsCount = userPendingEvents.length;
+
+      _userdata.write('userPendingEventsCount', userPendingEventsCount);
+
+      notifyListeners();
+    } else {
+      _userdata.write('userPendingEventsCount', 0);
+    }
+
+    notifyListeners();
+  }
+
+  void apiGetUserAwaitingEvents(int? userId) async {
+    print("userId: $userId");
+    var response = await Backend.getAwaitingEventsByUser(userId);
+
+    String userAwaitingEventsResponseBody = response.body;
+
+    if (response.statusCode == 200 && userAwaitingEventsResponseBody != '[]') {
+      _userdata.write('userAwaitingEventsResponseBody', userAwaitingEventsResponseBody);
+
+      var userAwaitingEvents = eventFromJson(userAwaitingEventsResponseBody);
+      var userAwaitingEventsCount = userAwaitingEvents.length;
+
+      _userdata.write('userAwaitingEventsCount', userAwaitingEventsCount);
+
+      notifyListeners();
+    } else {
+      _userdata.write('userAwaitingEventsCount', 0);
+    }
+
+    notifyListeners();
+  }
+
+  void apiGetUserConfirmedEvents(int? userId) async {
+    print("userId: $userId");
+    var response = await Backend.getConfirmedEventsByUser(userId);
+
+    String userConfirmedEventsResponseBody = response.body;
+
+    if (response.statusCode == 200 && userConfirmedEventsResponseBody != '[]') {
+      _userdata.write('userConfirmedEventsResponseBody', userConfirmedEventsResponseBody);
+
+      var userConfirmedEvents = eventFromJson(userConfirmedEventsResponseBody);
+      var userConfirmedEventsCount = userConfirmedEvents.length;
+
+      _userdata.write('userConfirmedEventsCount', userConfirmedEventsCount);
+
+      notifyListeners();
+    } else {
+      _userdata.write('userConfirmedEventsCount', 0);
     }
 
     notifyListeners();
@@ -144,10 +208,10 @@ class ApiData extends ChangeNotifier {
     notifyListeners();
   }
 
-  void apiConfirmEvent(int showId) async {
+  void apiConfirmEvent(int? showId) async {
     print("showId: $showId");
 
-    var response = await Backend.deleteShow(showId);
+    var response = await Backend.confirmShow(showId);
 
     String responseBody = response.body;
     int responseCode = response.statusCode;
