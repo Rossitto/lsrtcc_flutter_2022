@@ -58,14 +58,14 @@ class _LoginScreenState extends State<LoginScreen> {
     userId = userdata.read('userId');
     userName = userdata.read('userName') ?? '';
 
-    setState(() {
+
       WidgetsBinding.instance!.addPostFrameCallback((_) {
         Provider.of<ApiData>(context, listen: false).apiGetUserBands(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserPubs(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserEvents(userId);
         Provider.of<ApiData>(context, listen: false).apiGetAllPubs();
         Provider.of<ApiData>(context, listen: false).apiGetAllBands();
-      });
+
 
       userEventsResponseBody = userdata.read('userEventsResponseBody');
       var userEventsCount = userdata.read('userEventsCount') ?? 0;
@@ -73,14 +73,17 @@ class _LoginScreenState extends State<LoginScreen> {
       userEventsCount = userdata.read('userEventsCount');
       print('MyEvents userEventsCount: $userEventsCount');
 
+      userEventsCount = userEventsCount ?? 0;
       userEvents = userEventsCount == 0
           ? null
           : eventFromJson(userEventsResponseBody); // List<Event>
 
+      userConfirmedEvents = userConfirmedEvents ?? 0;
       userConfirmedEvents = userEventsCount == 0
           ? null
           : userEvents.where((i) => i.confirmed == true).toList();
 
+      userPendingEvents = userPendingEvents ?? 0;
       userPendingEvents = userEventsCount == 0
           ? null
           : userEvents.where((i) => i.confirmed == false).toList();

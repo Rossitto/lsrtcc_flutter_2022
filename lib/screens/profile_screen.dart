@@ -78,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.didChangeDependencies();
   }
 
-  void fetchUserEvents() async {
+  Future fetchUserEvents() async {
     userId = userdata.read('userId');
     userName = userdata.read('userName') ?? '';
 
@@ -104,18 +104,18 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
-  void fetchUserBandsAndPubs() async {
+  Future fetchUserBandsAndPubs() async {
     userId = userdata.read('userId');
     userName = userdata.read('userName') ?? '';
 
-    setState(() {
+
       WidgetsBinding.instance!.addPostFrameCallback((_) {
         Provider.of<ApiData>(context, listen: false).apiGetUserBands(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserPubs(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserEvents(userId);
         Provider.of<ApiData>(context, listen: false).apiGetAllPubs();
         Provider.of<ApiData>(context, listen: false).apiGetAllBands();
-      });
+
 
       userEventsResponseBody = userdata.read('userEventsResponseBody');
       var userBandsCount = userdata.read('userBandsCount') ?? 0;
@@ -136,14 +136,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _getData() async {
-    setState(() {
-      fetchUserEvents();
-      fetchUserBandsAndPubs();
-    });
+    // setState(() {
+      await fetchUserEvents();
+      await fetchUserBandsAndPubs();
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
+    _getData();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Provider.of<ApiData>(context, listen: false).apiGetUserBands(userId);
       Provider.of<ApiData>(context, listen: false).apiGetUserPubs(userId);

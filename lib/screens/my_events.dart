@@ -1,3 +1,4 @@
+// ignore: unnecessary_null_comparison
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lsrtcc_flutter/model/event.dart';
@@ -55,13 +56,14 @@ class _MyEventsState extends State<MyEvents>
           );
         },
       );
-      _getData();
+      // fetchUserEvents();
+      // _getData();
     }
     userdata.remove('msg_register_event');
 
     controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
     );
 
     animation = ColorTween(begin: Colors.blueGrey, end: Colors.white)
@@ -73,6 +75,8 @@ class _MyEventsState extends State<MyEvents>
       setState(() {});
     });
 
+    _getData();
+
     super.initState();
   }
 
@@ -82,12 +86,11 @@ class _MyEventsState extends State<MyEvents>
     controller.dispose();
   }
 
-  void fetchUserEvents() async {
+  Future fetchUserEvents() async {
     userId = userdata.read('userId');
     userName = userdata.read('userName') ?? '';
 
-    setState(() {
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
         Provider.of<ApiData>(context, listen: false).apiGetUserEvents(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserPendingEvents(userId);
         Provider.of<ApiData>(context, listen: false).apiGetUserAwaitingEvents(userId);
@@ -95,7 +98,7 @@ class _MyEventsState extends State<MyEvents>
       });
       userEventsResponseBody = userdata.read('userEventsResponseBody');
 
-      userEventsCount = userdata.read('userEventsCount');
+      userEventsCount = userdata.read('userEventsCount') ?? 0;
 
       userEvents = userEventsCount == 0
           ? null
@@ -108,7 +111,8 @@ class _MyEventsState extends State<MyEvents>
       // PENDING
       userPendingEventsResponseBody = userdata.read('userPendingEventsResponseBody');
 
-      userPendingEventsCount = userdata.read('userPendingEventsCount');
+      userPendingEventsCount = userdata.read('userPendingEventsCount') ?? 0;
+      print('userPendingEventsCount = $userPendingEventsCount');
 
       userPendingEvents = userPendingEventsCount == 0
           ? null
@@ -117,7 +121,7 @@ class _MyEventsState extends State<MyEvents>
       // Awaiting
       userAwaitingEventsResponseBody = userdata.read('userAwaitingEventsResponseBody');
 
-      userAwaitingEventsCount = userdata.read('userAwaitingEventsCount');
+      userAwaitingEventsCount = userdata.read('userAwaitingEventsCount') ?? 0;
 
       userAwaitingEvents = userAwaitingEventsCount == 0
           ? null
@@ -131,25 +135,16 @@ class _MyEventsState extends State<MyEvents>
       userConfirmedEvents = userConfirmedEventsCount == 0
           ? null
           : eventFromJson(userConfirmedEventsResponseBody).toList(); // List<Event>
-    });
+    // });
   }
 
-  Future<void> _getData() async {
-    setState(() {
-      fetchUserEvents();
-    });
+  Future _getData() async {
+    await fetchUserEvents();
   }
 
   @override
   Widget build(BuildContext context) {
-    fetchUserEvents();
-
-    // void refreshVariables() {
-    //   _selectedIndexConfirmed = null;
-    //   _selectedIndexPending = null;
-    //   selectedShowId = null;
-    //   selectedEventJson = null;
-    // }
+    _getData();
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -224,7 +219,7 @@ class _MyEventsState extends State<MyEvents>
                                               _selectedIndexAwaiting = null;
                                               _selectedIndexPending = null;
                                               _selectedIndexConfirmed = index;
-                                              selectedShowId = userConfirmedEvents[index].id;
+                                              selectedShowId = index == null ? null : userConfirmedEvents[index].id;
                                             });
 
                                             selectedEventJson =
@@ -233,21 +228,6 @@ class _MyEventsState extends State<MyEvents>
                                             userdata.remove('selectedEventJson');
                                             userdata.write('selectedEventJson',
                                                 selectedEventJson);
-
-                                            // var selectedEventName = userEvents[index].name;
-                                            // userdata.write(
-                                            //     'selectedBandName', selectedBandName);
-
-                                            // ScaffoldMessenger.of(context).showSnackBar(
-                                            //   SnackBar(
-                                            //     behavior: SnackBarBehavior.floating,
-                                            //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
-                                            //     content: Text(
-                                            //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
-                                            //         textAlign: TextAlign.center),
-                                            //     duration: Duration(seconds: 1),
-                                            //   ),
-                                            // );
                                           },
                                           title: Text(userConfirmedEvents[index]
                                               .showDatetime
@@ -299,29 +279,12 @@ class _MyEventsState extends State<MyEvents>
                                         _selectedIndexAwaiting = null;
                                         _selectedIndexConfirmed = null;
                                         _selectedIndexPending = index;
-                                        selectedShowId = userPendingEvents[index].id;
+                                        selectedShowId = index == null ? null : userPendingEvents[index].id;
                                       });
 
-                                      selectedEventJson =
-                                          userPendingEvents[index].toJson();
+                                      selectedEventJson = userPendingEvents[index].toJson();
                                       userdata.remove('selectedEventJson');
-                                      userdata.write(
-                                          'selectedEventJson', selectedEventJson);
-
-                                      // var selectedEventName = userEvents[index].name;
-                                      // userdata.write(
-                                      //     'selectedBandName', selectedBandName);
-
-                                      // ScaffoldMessenger.of(context).showSnackBar(
-                                      //   SnackBar(
-                                      //     behavior: SnackBarBehavior.floating,
-                                      //     // Text(userEvents[index].showDatetime.toString().substring(0, 16) + 'pressionado') // começa no 1 e não no 0
-                                      //     content: Text(
-                                      //         '${userEvents[index].band.name} no ${userEvents[index].pub.name}??\nEsse show vai ser TOP!!! $fireEmoji',
-                                      //         textAlign: TextAlign.center),
-                                      //     duration: Duration(seconds: 1),
-                                      //   ),
-                                      // );
+                                      userdata.write('selectedEventJson', selectedEventJson);
                                     },
                                     title: Text(userPendingEvents[index]
                                         .showDatetime
@@ -372,7 +335,7 @@ class _MyEventsState extends State<MyEvents>
                                         _selectedIndexPending = null;
                                         _selectedIndexConfirmed = null;
                                         _selectedIndexAwaiting = index;
-                                        selectedShowId = userAwaitingEvents[index].id;
+                                        selectedShowId = index == null ? null : userAwaitingEvents[index].id;
                                       });
 
                                       selectedEventJson = userAwaitingEvents[index].toJson();
@@ -425,23 +388,36 @@ class _MyEventsState extends State<MyEvents>
               color: Colors.green,
               text: 'Confirmar',
               onPressed: () {
-                WidgetsBinding.instance!.addPostFrameCallback((_) {
-                  Provider.of<ApiData>(context, listen: false)
-                      .apiConfirmEvent(selectedShowId);
-                  // refreshVariables();
-                  // _getData();
+                print('userPendingEvents: $userPendingEvents');
+                if (userPendingEvents != null) {
+                  if (userPendingEvents.any((item) => item.id == selectedShowId)) {
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+                      Provider.of<ApiData>(context, listen: false)
+                          .apiConfirmEvent(selectedShowId);
+                      // refreshVariables();
+                      // _getData();
 
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          content: Text("Evento CONFIRMADO com sucesso"),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+
+                      Navigator.pushNamed(context, MyEvents.id);
+                    });
+                  }
+                } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
-                      content: Text("Evento CONFIRMADO com sucesso"),
+                      content: Text("Evento não pendente de sua confirmação"),
                       duration: Duration(seconds: 2),
                     ),
                   );
-
-                  Navigator.pushNamed(context, MyEvents.id);
-                });
-              },
+                };
+                },
             ),
             RoundedButton(
               color: Colors.redAccent,

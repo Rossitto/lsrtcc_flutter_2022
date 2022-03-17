@@ -81,6 +81,7 @@ class ApiData extends ChangeNotifier {
       notifyListeners();
     } else {
       _userdata.write('userEventsCount', 0);
+      _userdata.write('userEventsResponseBody', '');
     }
 
     notifyListeners();
@@ -95,7 +96,11 @@ class ApiData extends ChangeNotifier {
     if (response.statusCode == 200 && userPendingEventsResponseBody != '[]') {
       _userdata.write('userPendingEventsResponseBody', userPendingEventsResponseBody);
 
-      var userPendingEvents = eventFromJson(userPendingEventsResponseBody);
+      var userPendingEvents = eventFromJson(userPendingEventsResponseBody).toList();
+      print(userPendingEvents);
+
+      _userdata.write('userPendingEvents', userPendingEvents);
+
       var userPendingEventsCount = userPendingEvents.length;
 
       _userdata.write('userPendingEventsCount', userPendingEventsCount);
@@ -103,6 +108,7 @@ class ApiData extends ChangeNotifier {
       notifyListeners();
     } else {
       _userdata.write('userPendingEventsCount', 0);
+      _userdata.write('userPendingEventsResponseBody', '');
     }
 
     notifyListeners();
@@ -125,6 +131,7 @@ class ApiData extends ChangeNotifier {
       notifyListeners();
     } else {
       _userdata.write('userAwaitingEventsCount', 0);
+      _userdata.write('userAwaitingEventsResponseBody', '');
     }
 
     notifyListeners();
@@ -147,6 +154,7 @@ class ApiData extends ChangeNotifier {
       notifyListeners();
     } else {
       _userdata.write('userConfirmedEventsCount', 0);
+      _userdata.write('userConfirmedEventsResponseBody', '');
     }
 
     notifyListeners();
@@ -209,15 +217,23 @@ class ApiData extends ChangeNotifier {
   }
 
   void apiConfirmEvent(int? showId) async {
-    print("showId: $showId");
+    print("showId to confirm: $showId");
 
-    var response = await Backend.confirmShow(showId);
+    var userPendingEvents = _userdata.read('userPendingEvents');
+    print('apiConfirmEvent userPendingEvents = $userPendingEvents');
 
-    String responseBody = response.body;
-    int responseCode = response.statusCode;
+    if (userPendingEvents.any((item) => item.id == showId)) {
+      var response = await Backend.confirmShow(showId);
 
-    print("responseBody: $responseBody");
-    print("responseCode: $responseCode");
+      String responseBody = response.body;
+      int responseCode = response.statusCode;
+
+      print("responseBody: $responseBody");
+      print("responseCode: $responseCode");
+      _userdata.write('eventWasConfirmed', true);
+    } else {
+      _userdata.write('eventWasConfirmed', false);
+    }
 
     notifyListeners();
   }
